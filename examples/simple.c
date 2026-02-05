@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,6 +13,31 @@ static void print_usage(const char *exe) {
   printf("  -v, --verbose         Increase verbosity (repeatable)\n");
   printf("  -o, --output FILE     Output file\n");
   printf("  -s, --size[=N]        Optional size (default 1 if set)\n");
+}
+
+static const char *find_long_name(const struct parg_option *longopts, int val) {
+  for (int i = 0; longopts[i].name != NULL; ++i) {
+    if (longopts[i].flag == NULL && longopts[i].val == val) {
+      return longopts[i].name;
+    }
+  }
+
+  return NULL;
+}
+
+static int parse_nonnegative_int(const char *text, int *out) {
+  char *end = NULL;
+  long value;
+
+  errno = 0;
+  value = strtol(text, &end, 10);
+
+  if (errno != 0 || end == text || *end != '\0' || value < 0 || value > INT_MAX) {
+    return -1;
+  }
+
+  *out = (int)value;
+  return 0;
 }
 
 int main(int argc, char **argv) {
@@ -30,7 +57,7 @@ int main(int argc, char **argv) {
   int size = 0;
 
   int opt;
-  while ((opt = parg_getopt_long(&ps, argc, argv, "hvo:s::", longopts, NULL)) != -1) {
+  while ((opt = parg_getopt_long(&ps, argc, argv, ":hvo:s::", longopts, NULL)) != -1) {
     if (opt == 1) {
       printf("arg: %s\n", ps.optarg);
       continue;
@@ -47,13 +74,32 @@ int main(int argc, char **argv) {
       output = ps.optarg;
       break;
     case 's':
-      size = ps.optarg ? atoi(ps.optarg) : 1;
+      if (ps.optarg != NULL) {
+        if (parse_nonnegative_int(ps.optarg, &size) != 0) {
+          fprintf(stderr, "Invalid size value: %s\n", ps.optarg);
+          return 1;
+        }
+      } else {
+        size = 1;
+      }
       break;
     case '?':
-      fprintf(stderr, "Unknown option: %c\n", ps.optopt);
+      if (ps.optopt != 0) {
+        fprintf(stderr, "Unknown option: -%c\n", ps.optopt);
+      } else {
+        const char *token = ps.optind > 0 ? argv[ps.optind - 1] : "(unknown)";
+        fprintf(stderr, "Unknown or ambiguous option: %s\n", token);
+      }
       return 1;
     case ':':
-      fprintf(stderr, "Missing value for option: %c\n", ps.optopt);
+      {
+        const char *long_name = find_long_name(longopts, ps.optopt);
+        if (long_name != NULL) {
+          fprintf(stderr, "Missing value for option: --%s\n", long_name);
+        } else {
+          fprintf(stderr, "Missing value for option: -%c\n", ps.optopt);
+        }
+      }
       return 1;
     default:
       fprintf(stderr, "Unexpected parse result: %d\n", opt);

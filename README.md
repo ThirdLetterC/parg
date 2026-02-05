@@ -4,6 +4,7 @@ A small C library for parsing command-line arguments. It supports short options,
 
 **Build**
 - Build the static library and example with Zig: `zig build`
+- Run parser regression tests: `zig build test`
 - Run the example: `zig build run -- --help`
 - Artifacts are placed under `zig-out/`
 
@@ -30,7 +31,7 @@ int main(int argc, char **argv) {
   };
 
   int opt;
-  while ((opt = parg_getopt_long(&ps, argc, argv, "ho:s::", longopts, NULL)) != -1) {
+  while ((opt = parg_getopt_long(&ps, argc, argv, ":ho:s::", longopts, NULL)) != -1) {
     if (opt == 1) {
       printf("arg: %s\n", ps.optarg);
       continue;
@@ -47,10 +48,14 @@ int main(int argc, char **argv) {
       printf("size=%d\n", ps.optarg ? atoi(ps.optarg) : 1);
       break;
     case '?':
-      fprintf(stderr, "Unknown option: %c\n", ps.optopt);
+      if (ps.optopt) {
+        fprintf(stderr, "Unknown option: -%c\n", ps.optopt);
+      } else {
+        fprintf(stderr, "Unknown or ambiguous option: %s\n", argv[ps.optind - 1]);
+      }
       return 1;
     case ':':
-      fprintf(stderr, "Missing value for option: %c\n", ps.optopt);
+      fprintf(stderr, "Missing value for option: -%c\n", ps.optopt);
       return 1;
     }
   }
