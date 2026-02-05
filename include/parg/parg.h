@@ -24,15 +24,10 @@
 #ifndef PARG_H_INCLUDED
 #define PARG_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-static constexpr int PARG_VER_MAJOR = 1; /**< Major version number */
-static constexpr int PARG_VER_MINOR = 0; /**< Minor version number */
-static constexpr int PARG_VER_PATCH = 3; /**< Patch version number */
-static constexpr char PARG_VER_STRING[] =
-    "1.0.3"; /**< Version number as a string */
+#define PARG_VER_MAJOR 1  /**< Major version number */
+#define PARG_VER_MINOR 0  /**< Minor version number */
+#define PARG_VER_PATCH 3  /**< Patch version number */
+#define PARG_VER_STRING "1.0.3" /**< Version number as a string */
 
 /**
  * Values for `has_arg` flag in `parg_option`.
@@ -123,8 +118,8 @@ void parg_init(struct parg_state *ps);
  * arguments, '`?`' on unmatched option, '`?`' or '`:`' on option argument
  * error
  */
-[[nodiscard]] int parg_getopt(struct parg_state *ps, int argc,
-                              char *const argv[], const char *optstring);
+int parg_getopt(struct parg_state *ps, int argc, char *const argv[],
+                const char *optstring);
 
 /**
  * Parse next long or short option in `argv`.
@@ -138,17 +133,17 @@ void parg_init(struct parg_state *ps);
  * '`--fo`' is ambiguous and will not match, '`--foo`' matches exactly, and
  * '`--foob`' is an unambiguous prefix and will match.
  *
- * If a long option match is found, and `flag` is `nullptr`, `val` is returned.
+ * If a long option match is found, and `flag` is `NULL`, `val` is returned.
  *
- * If a long option match is found, and `flag` is not `nullptr`, `val` is stored
+ * If a long option match is found, and `flag` is not `NULL`, `val` is stored
  * in the variable `flag` points to, and `0` is returned.
  *
  * If a long option match is found, but is missing a required option argument,
  * or has an option argument even though it takes none, `optopt` is set to
- * `val` if `flag` is `nullptr`, and `0` otherwise. If the first character in
+ * `val` if `flag` is `NULL`, and `0` otherwise. If the first character in
  * `optstring` is '`:`', then '`:`' is returned, otherwise '`?`' is returned.
  *
- * If `longindex` is not `nullptr`, the index of the entry in `longopts` that
+ * If `longindex` is not `NULL`, the index of the entry in `longopts` that
  * matched is stored there.
  *
  * If no long option in `longopts` matches a long option, '`?`' is returned.
@@ -172,15 +167,14 @@ void parg_init(struct parg_state *ps);
  * element, `-1` on end of arguments, '`?`' on unmatched or ambiguous option,
  * '`?`' or '`:`' on option argument error
  */
-[[nodiscard]] int parg_getopt_long(struct parg_state *ps, int argc,
-                                   char *const argv[], const char *optstring,
-                                   const struct parg_option *longopts,
-                                   int *longindex);
+int parg_getopt_long(struct parg_state *ps, int argc, char *const argv[],
+                     const char *optstring,
+                     const struct parg_option *longopts, int *longindex);
 
 /**
  * Reorder elements of `argv` so options appear first.
  *
- * If there are no long options, `longopts` may be `nullptr`.
+ * If there are no long options, `longopts` may be `NULL`.
  *
  * The return value can be used as `argc` parameter for `parg_getopt()` and
  * `parg_getopt_long()`.
@@ -191,12 +185,7 @@ void parg_init(struct parg_state *ps);
  * @param longopts array of `parg_option` structures
  * @return index of first nonoption in `argv` on success, `-1` on error
  */
-[[nodiscard]] int parg_reorder(int argc, char *argv[], const char *optstring,
-                               const struct parg_option *longopts);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+int parg_reorder(int argc, char *argv[], const char *optstring,
+                 const struct parg_option *longopts);
 
 #endif /* PARG_H_INCLUDED */
-

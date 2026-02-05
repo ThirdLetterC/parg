@@ -22,15 +22,16 @@
  */
 
 #include <assert.h>
-#include <stdlib.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <string.h>
 
-#include "parg.h"
+#include "parg/parg.h"
 
 /* Check if state is at end of argv. */
 static bool is_argv_end(const struct parg_state *ps, int argc,
                         char *const argv[]) {
-  return ps->optind >= argc || argv[ps->optind] == nullptr;
+  return ps->optind >= argc || argv[ps->optind] == NULL;
 }
 
 /*
@@ -38,9 +39,9 @@ static bool is_argv_end(const struct parg_state *ps, int argc,
  */
 static int match_short(struct parg_state *ps, int argc, char *const argv[],
                        const char *optstring) {
-  const auto p = strchr(optstring, *ps->nextchar);
+  const char *p = strchr(optstring, *ps->nextchar);
 
-  if (p == nullptr) {
+  if (p == NULL) {
     ps->optopt = *ps->nextchar++;
     return '?';
   }
@@ -53,7 +54,7 @@ static int match_short(struct parg_state *ps, int argc, char *const argv[],
   /* If more characters, return as option argument */
   if (ps->nextchar[1] != '\0') {
     ps->optarg = &ps->nextchar[1];
-    ps->nextchar = nullptr;
+    ps->nextchar = NULL;
     return *p;
   }
 
@@ -69,7 +70,7 @@ static int match_short(struct parg_state *ps, int argc, char *const argv[],
   }
 
   ps->optarg = argv[ps->optind++];
-  ps->nextchar = nullptr;
+  ps->nextchar = NULL;
   return *p;
 }
 
@@ -79,11 +80,11 @@ static int match_short(struct parg_state *ps, int argc, char *const argv[],
 static int match_long(struct parg_state *ps, int argc, char *const argv[],
                       const char *optstring, const struct parg_option *longopts,
                       int *longindex) {
-  const auto len = strcspn(ps->nextchar, "=");
-  auto num_match = 0;
-  auto match = -1;
+  size_t len = strcspn(ps->nextchar, "=");
+  int num_match = 0;
+  int match = -1;
 
-  for (int i = 0; longopts[i].name != nullptr; ++i) {
+  for (int i = 0; longopts[i].name != NULL; ++i) {
     if (strncmp(ps->nextchar, longopts[i].name, len) == 0) {
       match = i;
       num_match++;
@@ -98,13 +99,13 @@ static int match_long(struct parg_state *ps, int argc, char *const argv[],
   /* Return '?' on no or ambiguous match */
   if (num_match != 1) {
     ps->optopt = 0;
-    ps->nextchar = nullptr;
+    ps->nextchar = NULL;
     return '?';
   }
 
   assert(match != -1);
 
-  if (longindex != nullptr) {
+  if (longindex != NULL) {
     *longindex = match;
   }
 
@@ -112,7 +113,7 @@ static int match_long(struct parg_state *ps, int argc, char *const argv[],
     /* Option argument present, check if extraneous */
     if (longopts[match].has_arg == PARG_NOARG) {
       ps->optopt = longopts[match].flag ? 0 : longopts[match].val;
-      ps->nextchar = nullptr;
+      ps->nextchar = NULL;
       return optstring[0] == ':' ? ':' : '?';
     } else {
       ps->optarg = &ps->nextchar[len + 1];
@@ -121,16 +122,16 @@ static int match_long(struct parg_state *ps, int argc, char *const argv[],
     /* Option argument required, so return next argv element */
     if (is_argv_end(ps, argc, argv)) {
       ps->optopt = longopts[match].flag ? 0 : longopts[match].val;
-      ps->nextchar = nullptr;
+      ps->nextchar = NULL;
       return optstring[0] == ':' ? ':' : '?';
     }
 
     ps->optarg = argv[ps->optind++];
   }
 
-  ps->nextchar = nullptr;
+  ps->nextchar = NULL;
 
-  if (longopts[match].flag != nullptr) {
+  if (longopts[match].flag != NULL) {
     *longopts[match].flag = longopts[match].val;
     return 0;
   }
@@ -139,33 +140,32 @@ static int match_long(struct parg_state *ps, int argc, char *const argv[],
 }
 
 void parg_init(struct parg_state *ps) {
-  ps->optarg = nullptr;
+  ps->optarg = NULL;
   ps->optind = 1;
   ps->optopt = '?';
-  ps->nextchar = nullptr;
+  ps->nextchar = NULL;
 }
 
-[[nodiscard]] int parg_getopt(struct parg_state *ps, int argc,
-                              char *const argv[], const char *optstring) {
-  return parg_getopt_long(ps, argc, argv, optstring, nullptr, nullptr);
+int parg_getopt(struct parg_state *ps, int argc, char *const argv[],
+                const char *optstring) {
+  return parg_getopt_long(ps, argc, argv, optstring, NULL, NULL);
 }
 
-[[nodiscard]] int parg_getopt_long(struct parg_state *ps, int argc,
-                                   char *const argv[], const char *optstring,
-                                   const struct parg_option *longopts,
-                                   int *longindex) {
-  assert(ps != nullptr);
-  assert(argv != nullptr);
-  assert(optstring != nullptr);
+int parg_getopt_long(struct parg_state *ps, int argc, char *const argv[],
+                     const char *optstring,
+                     const struct parg_option *longopts, int *longindex) {
+  assert(ps != NULL);
+  assert(argv != NULL);
+  assert(optstring != NULL);
 
-  ps->optarg = nullptr;
+  ps->optarg = NULL;
 
   if (argc < 2) {
     return -1;
   }
 
   /* Advance to next element if needed */
-  if (ps->nextchar == nullptr || *ps->nextchar == '\0') {
+  if (ps->nextchar == NULL || *ps->nextchar == '\0') {
     if (is_argv_end(ps, argc, argv)) {
       return -1;
     }
@@ -175,18 +175,18 @@ void parg_init(struct parg_state *ps) {
     /* Check for nonoption element (including '-') */
     if (ps->nextchar[0] != '-' || ps->nextchar[1] == '\0') {
       ps->optarg = ps->nextchar;
-      ps->nextchar = nullptr;
+      ps->nextchar = NULL;
       return 1;
     }
 
     /* Check for '--' */
     if (ps->nextchar[1] == '-') {
       if (ps->nextchar[2] == '\0') {
-        ps->nextchar = nullptr;
+        ps->nextchar = NULL;
         return -1;
       }
 
-      if (longopts != nullptr) {
+      if (longopts != NULL) {
         ps->nextchar += 2;
 
         return match_long(ps, argc, argv, optstring, longopts, longindex);
@@ -205,7 +205,7 @@ void parg_init(struct parg_state *ps) {
  */
 static void reverse(char *v[], int i, int j) {
   while (j - i > 1) {
-    auto tmp = v[i];
+    char *tmp = v[i];
     v[i] = v[j - 1];
     v[j - 1] = tmp;
     ++i;
@@ -244,8 +244,8 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
 
     /* Parse until end of argument */
     do {
-      c = parg_getopt_long(&ps, argc, argv, optstring, longopts, nullptr);
-    } while (ps.nextchar != nullptr && *ps.nextchar != '\0');
+      c = parg_getopt_long(&ps, argc, argv, optstring, longopts, NULL);
+    } while (ps.nextchar != NULL && *ps.nextchar != '\0');
 
     change = false;
 
@@ -255,8 +255,8 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
         l = ps.optind;
 
         do {
-          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, nullptr);
-        } while (ps.nextchar != nullptr && *ps.nextchar != '\0');
+          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, NULL);
+        } while (ps.nextchar != NULL && *ps.nextchar != '\0');
       }
 
       /* Find next option */
@@ -264,8 +264,8 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
         m = ps.optind;
 
         do {
-          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, nullptr);
-        } while (ps.nextchar != nullptr && *ps.nextchar != '\0');
+          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, NULL);
+        } while (ps.nextchar != NULL && *ps.nextchar != '\0');
       }
 
       /* Find next non-option */
@@ -273,8 +273,8 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
         r = ps.optind;
 
         do {
-          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, nullptr);
-        } while (ps.nextchar != nullptr && *ps.nextchar != '\0');
+          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, NULL);
+        } while (ps.nextchar != NULL && *ps.nextchar != '\0');
       }
 
       /* Find next option */
@@ -282,8 +282,8 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
         nextind = ps.optind;
 
         do {
-          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, nullptr);
-        } while (ps.nextchar != nullptr && *ps.nextchar != '\0');
+          c = parg_getopt_long(&ps, argc, argv, optstring, longopts, NULL);
+        } while (ps.nextchar != NULL && *ps.nextchar != '\0');
       }
 
       if (m < r) {
@@ -298,15 +298,15 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
   return l + (r - m);
 }
 
-[[nodiscard]] int parg_reorder(int argc, char *argv[], const char *optstring,
-                               const struct parg_option *longopts) {
+int parg_reorder(int argc, char *argv[], const char *optstring,
+                 const struct parg_option *longopts) {
   struct parg_state ps;
   int lastind;
   int optend;
   int c;
 
-  assert(argv != nullptr);
-  assert(optstring != nullptr);
+  assert(argv != NULL);
+  assert(optstring != NULL);
 
   if (argc < 2) {
     return argc;
@@ -318,7 +318,7 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
   do {
     lastind = ps.optind;
 
-    c = parg_getopt_long(&ps, argc, argv, optstring, longopts, nullptr);
+    c = parg_getopt_long(&ps, argc, argv, optstring, longopts, NULL);
 
     /* Check for trailing option with error */
     if ((c == '?' || c == ':') && is_argv_end(&ps, argc, argv)) {
@@ -338,4 +338,3 @@ static int parg_reorder_simple(int argc, char *argv[], const char *optstring,
 
   return optend;
 }
-
