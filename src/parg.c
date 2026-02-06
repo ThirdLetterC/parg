@@ -151,8 +151,8 @@ int parg_getopt(struct parg_state *ps, int argc, char *const argv[],
 }
 
 int parg_getopt_long(struct parg_state *ps, int argc, char *const argv[],
-                     const char *optstring,
-                     const struct parg_option *longopts, int *longindex) {
+                     const char *optstring, const struct parg_option *longopts,
+                     int *longindex) {
   assert(ps != nullptr);
   assert(argv != nullptr);
   assert(optstring != nullptr);

@@ -32,7 +32,8 @@ static int parse_nonnegative_int(const char *text, int *out) {
   errno = 0;
   value = strtol(text, &end, 10);
 
-  if (errno != 0 || end == text || *end != '\0' || value < 0 || value > INT_MAX) {
+  if (errno != 0 || end == text || *end != '\0' || value < 0 ||
+      value > INT_MAX) {
     return -1;
   }
 
@@ -57,7 +58,8 @@ int main(int argc, char **argv) {
   int size = 0;
 
   int opt;
-  while ((opt = parg_getopt_long(&ps, argc, argv, ":hvo:s::", longopts, nullptr)) != -1) {
+  while ((opt = parg_getopt_long(&ps, argc, argv, ":hvo:s::", longopts,
+                                 nullptr)) != -1) {
     if (opt == 1) {
       printf("arg: %s\n", ps.optarg);
       continue;
@@ -91,15 +93,14 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Unknown or ambiguous option: %s\n", token);
       }
       return 1;
-    case ':':
-      {
-        const char *long_name = find_long_name(longopts, ps.optopt);
-        if (long_name != nullptr) {
-          fprintf(stderr, "Missing value for option: --%s\n", long_name);
-        } else {
-          fprintf(stderr, "Missing value for option: -%c\n", ps.optopt);
-        }
+    case ':': {
+      const char *long_name = find_long_name(longopts, ps.optopt);
+      if (long_name != nullptr) {
+        fprintf(stderr, "Missing value for option: --%s\n", long_name);
+      } else {
+        fprintf(stderr, "Missing value for option: -%c\n", ps.optopt);
       }
+    }
       return 1;
     default:
       fprintf(stderr, "Unexpected parse result: %d\n", opt);

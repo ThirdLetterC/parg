@@ -3,24 +3,24 @@
 
 #include "parg/parg.h"
 
-#define ASSERT_EQ_INT(actual, expected)                                         \
-  do {                                                                          \
-    if ((actual) != (expected)) {                                               \
-      fprintf(stderr,                                                            \
-              "assert failed: %s == %s (actual=%d expected=%d) at %s:%d\n",     \
+#define ASSERT_EQ_INT(actual, expected)                                        \
+  do {                                                                         \
+    if ((actual) != (expected)) {                                              \
+      fprintf(stderr,                                                          \
+              "assert failed: %s == %s (actual=%d expected=%d) at %s:%d\n",    \
               #actual, #expected, (actual), (expected), __FILE__, __LINE__);   \
-      return 1;                                                                  \
-    }                                                                            \
+      return 1;                                                                \
+    }                                                                          \
   } while (0)
 
-#define ASSERT_EQ_STR(actual, expected)                                         \
-  do {                                                                          \
-    if (strcmp((actual), (expected)) != 0) {                                    \
-      fprintf(stderr,                                                            \
-              "assert failed: %s == %s (actual=%s expected=%s) at %s:%d\n",     \
+#define ASSERT_EQ_STR(actual, expected)                                        \
+  do {                                                                         \
+    if (strcmp((actual), (expected)) != 0) {                                   \
+      fprintf(stderr,                                                          \
+              "assert failed: %s == %s (actual=%s expected=%s) at %s:%d\n",    \
               #actual, #expected, (actual), (expected), __FILE__, __LINE__);   \
-      return 1;                                                                  \
-    }                                                                            \
+      return 1;                                                                \
+    }                                                                          \
   } while (0)
 
 static int test_unknown_long_sets_optopt_zero() {

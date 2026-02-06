@@ -24,10 +24,11 @@
 #ifndef PARG_H_INCLUDED
 #define PARG_H_INCLUDED
 
-static constexpr int PARG_VER_MAJOR = 1;          /**< Major version number */
-static constexpr int PARG_VER_MINOR = 0;          /**< Minor version number */
-static constexpr int PARG_VER_PATCH = 3;          /**< Patch version number */
-static constexpr char PARG_VER_STRING[] = "1.0.3"; /**< Version number as a string */
+static constexpr int PARG_VER_MAJOR = 1; /**< Major version number */
+static constexpr int PARG_VER_MINOR = 0; /**< Minor version number */
+static constexpr int PARG_VER_PATCH = 3; /**< Patch version number */
+static constexpr char PARG_VER_STRING[] =
+    "1.0.3"; /**< Version number as a string */
 
 /**
  * Values for `has_arg` flag in `parg_option`.
@@ -168,8 +169,7 @@ void parg_init(struct parg_state *ps);
  * '`?`' or '`:`' on option argument error
  */
 [[nodiscard]] int parg_getopt_long(struct parg_state *ps, int argc,
-                                   char *const argv[],
-                                   const char *optstring,
+                                   char *const argv[], const char *optstring,
                                    const struct parg_option *longopts,
                                    int *longindex);
 
