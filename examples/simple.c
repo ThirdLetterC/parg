@@ -16,17 +16,17 @@ static void print_usage(const char *exe) {
 }
 
 static const char *find_long_name(const struct parg_option *longopts, int val) {
-  for (int i = 0; longopts[i].name != NULL; ++i) {
-    if (longopts[i].flag == NULL && longopts[i].val == val) {
+  for (int i = 0; longopts[i].name != nullptr; ++i) {
+    if (longopts[i].flag == nullptr && longopts[i].val == val) {
       return longopts[i].name;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 static int parse_nonnegative_int(const char *text, int *out) {
-  char *end = NULL;
+  char *end = nullptr;
   long value;
 
   errno = 0;
@@ -45,19 +45,19 @@ int main(int argc, char **argv) {
   parg_init(&ps);
 
   const struct parg_option longopts[] = {
-      {"help", PARG_NOARG, NULL, 'h'},
-      {"verbose", PARG_NOARG, NULL, 'v'},
-      {"output", PARG_REQARG, NULL, 'o'},
-      {"size", PARG_OPTARG, NULL, 's'},
-      {NULL, PARG_NOARG, NULL, 0},
+      {"help", PARG_NOARG, nullptr, 'h'},
+      {"verbose", PARG_NOARG, nullptr, 'v'},
+      {"output", PARG_REQARG, nullptr, 'o'},
+      {"size", PARG_OPTARG, nullptr, 's'},
+      {nullptr, PARG_NOARG, nullptr, 0},
   };
 
   int verbose = 0;
-  const char *output = NULL;
+  const char *output = nullptr;
   int size = 0;
 
   int opt;
-  while ((opt = parg_getopt_long(&ps, argc, argv, ":hvo:s::", longopts, NULL)) != -1) {
+  while ((opt = parg_getopt_long(&ps, argc, argv, ":hvo:s::", longopts, nullptr)) != -1) {
     if (opt == 1) {
       printf("arg: %s\n", ps.optarg);
       continue;
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
       output = ps.optarg;
       break;
     case 's':
-      if (ps.optarg != NULL) {
+      if (ps.optarg != nullptr) {
         if (parse_nonnegative_int(ps.optarg, &size) != 0) {
           fprintf(stderr, "Invalid size value: %s\n", ps.optarg);
           return 1;
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
     case ':':
       {
         const char *long_name = find_long_name(longopts, ps.optopt);
-        if (long_name != NULL) {
+        if (long_name != nullptr) {
           fprintf(stderr, "Missing value for option: --%s\n", long_name);
         } else {
           fprintf(stderr, "Missing value for option: -%c\n", ps.optopt);

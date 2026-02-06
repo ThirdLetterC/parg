@@ -3,21 +3,26 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const base_c_flags = [_][]const u8{
+        "-std=c23",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+    };
+    const c_flags: []const []const u8 = &base_c_flags;
+    const sanitize_c: std.zig.SanitizeC = if (optimize == .Debug) .full else .off;
 
     const lib_module = b.createModule(.{
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .sanitize_c = sanitize_c,
     });
     lib_module.addIncludePath(b.path("include"));
     lib_module.addCSourceFile(.{
         .file = b.path("src/parg.c"),
-        .flags = &.{
-            "-std=c23",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-        },
+        .flags = c_flags,
     });
 
     const lib = b.addLibrary(.{
@@ -32,16 +37,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .sanitize_c = sanitize_c,
     });
     exe_module.addIncludePath(b.path("include"));
     exe_module.addCSourceFile(.{
         .file = b.path("examples/simple.c"),
-        .flags = &.{
-            "-std=c23",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-        },
+        .flags = c_flags,
     });
     exe_module.linkLibrary(lib);
 
@@ -56,16 +57,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .sanitize_c = sanitize_c,
     });
     tests_module.addIncludePath(b.path("include"));
     tests_module.addCSourceFile(.{
         .file = b.path("tests/parg_tests.c"),
-        .flags = &.{
-            "-std=c23",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-        },
+        .flags = c_flags,
     });
     tests_module.linkLibrary(lib);
 

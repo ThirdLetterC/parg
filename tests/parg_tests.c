@@ -23,84 +23,84 @@
     }                                                                            \
   } while (0)
 
-static int test_unknown_long_sets_optopt_zero(void) {
+static int test_unknown_long_sets_optopt_zero() {
   char arg0[] = "prog";
   char arg1[] = "--unknown";
-  char *argv[] = {arg0, arg1, NULL};
+  char *argv[] = {arg0, arg1, nullptr};
   struct parg_state ps;
   const struct parg_option longopts[] = {
-      {"verbose", PARG_NOARG, NULL, 'v'},
-      {NULL, PARG_NOARG, NULL, 0},
+      {"verbose", PARG_NOARG, nullptr, 'v'},
+      {nullptr, PARG_NOARG, nullptr, 0},
   };
 
   parg_init(&ps);
-  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":v", longopts, NULL), '?');
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":v", longopts, nullptr), '?');
   ASSERT_EQ_INT(ps.optopt, 0);
   ASSERT_EQ_INT(ps.optind, 2);
-  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":v", longopts, NULL), -1);
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":v", longopts, nullptr), -1);
   return 0;
 }
 
-static int test_missing_required_short_returns_colon(void) {
+static int test_missing_required_short_returns_colon() {
   char arg0[] = "prog";
   char arg1[] = "-o";
-  char *argv[] = {arg0, arg1, NULL};
+  char *argv[] = {arg0, arg1, nullptr};
   struct parg_state ps;
 
   parg_init(&ps);
-  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":o:", NULL, NULL), ':');
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":o:", nullptr, nullptr), ':');
   ASSERT_EQ_INT(ps.optopt, 'o');
   ASSERT_EQ_INT(ps.optind, 2);
   return 0;
 }
 
-static int test_missing_required_long_returns_colon(void) {
+static int test_missing_required_long_returns_colon() {
   char arg0[] = "prog";
   char arg1[] = "--output";
-  char *argv[] = {arg0, arg1, NULL};
+  char *argv[] = {arg0, arg1, nullptr};
   struct parg_state ps;
   const struct parg_option longopts[] = {
-      {"output", PARG_REQARG, NULL, 'o'},
-      {NULL, PARG_NOARG, NULL, 0},
+      {"output", PARG_REQARG, nullptr, 'o'},
+      {nullptr, PARG_NOARG, nullptr, 0},
   };
 
   parg_init(&ps);
-  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":o:", longopts, NULL), ':');
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":o:", longopts, nullptr), ':');
   ASSERT_EQ_INT(ps.optopt, 'o');
   ASSERT_EQ_INT(ps.optind, 2);
   return 0;
 }
 
-static int test_optional_short_argument_only_attached(void) {
+static int test_optional_short_argument_only_attached() {
   char arg0[] = "prog";
   char arg1[] = "-s";
   char arg2[] = "10";
-  char *argv[] = {arg0, arg1, arg2, NULL};
+  char *argv[] = {arg0, arg1, arg2, nullptr};
   struct parg_state ps;
 
   parg_init(&ps);
-  ASSERT_EQ_INT(parg_getopt_long(&ps, 3, argv, ":s::", NULL, NULL), 's');
-  ASSERT_EQ_INT(ps.optarg == NULL, 1);
-  ASSERT_EQ_INT(parg_getopt_long(&ps, 3, argv, ":s::", NULL, NULL), 1);
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 3, argv, ":s::", nullptr, nullptr), 's');
+  ASSERT_EQ_INT(ps.optarg == nullptr, 1);
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 3, argv, ":s::", nullptr, nullptr), 1);
   ASSERT_EQ_STR(ps.optarg, "10");
-  ASSERT_EQ_INT(parg_getopt_long(&ps, 3, argv, ":s::", NULL, NULL), -1);
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 3, argv, ":s::", nullptr, nullptr), -1);
   return 0;
 }
 
-static int test_reorder_moves_options_first(void) {
+static int test_reorder_moves_options_first() {
   char arg0[] = "prog";
   char arg1[] = "input1";
   char arg2[] = "-v";
   char arg3[] = "--output";
   char arg4[] = "out.txt";
   char arg5[] = "input2";
-  char *argv[] = {arg0, arg1, arg2, arg3, arg4, arg5, NULL};
+  char *argv[] = {arg0, arg1, arg2, arg3, arg4, arg5, nullptr};
   struct parg_state ps;
   int c;
   const struct parg_option longopts[] = {
-      {"verbose", PARG_NOARG, NULL, 'v'},
-      {"output", PARG_REQARG, NULL, 'o'},
-      {NULL, PARG_NOARG, NULL, 0},
+      {"verbose", PARG_NOARG, nullptr, 'v'},
+      {"output", PARG_REQARG, nullptr, 'o'},
+      {nullptr, PARG_NOARG, nullptr, 0},
   };
 
   const int optend = parg_reorder(6, argv, ":vo:", longopts);
@@ -113,14 +113,14 @@ static int test_reorder_moves_options_first(void) {
 
   parg_init(&ps);
   do {
-    c = parg_getopt_long(&ps, optend, argv, ":vo:", longopts, NULL);
+    c = parg_getopt_long(&ps, optend, argv, ":vo:", longopts, nullptr);
     ASSERT_EQ_INT(c == 1, 0);
   } while (c != -1);
 
   return 0;
 }
 
-int main(void) {
+int main() {
   if (test_unknown_long_sets_optopt_zero() != 0) {
     return 1;
   }

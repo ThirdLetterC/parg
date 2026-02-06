@@ -24,14 +24,14 @@ int main(int argc, char **argv) {
   parg_init(&ps);
 
   const struct parg_option longopts[] = {
-      {"help", PARG_NOARG, NULL, 'h'},
-      {"output", PARG_REQARG, NULL, 'o'},
-      {"size", PARG_OPTARG, NULL, 's'},
-      {NULL, PARG_NOARG, NULL, 0},
+      {"help", PARG_NOARG, nullptr, 'h'},
+      {"output", PARG_REQARG, nullptr, 'o'},
+      {"size", PARG_OPTARG, nullptr, 's'},
+      {nullptr, PARG_NOARG, nullptr, 0},
   };
 
   int opt;
-  while ((opt = parg_getopt_long(&ps, argc, argv, ":ho:s::", longopts, NULL)) != -1) {
+  while ((opt = parg_getopt_long(&ps, argc, argv, ":ho:s::", longopts, nullptr)) != -1) {
     if (opt == 1) {
       printf("arg: %s\n", ps.optarg);
       continue;
