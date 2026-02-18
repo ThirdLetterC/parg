@@ -21,8 +21,7 @@
  * SPDX-License-Identifier: MIT-0
  */
 
-#ifndef PARG_H_INCLUDED
-#define PARG_H_INCLUDED
+#pragma once
 
 static constexpr int PARG_VER_MAJOR = 1; /**< Major version number */
 static constexpr int PARG_VER_MINOR = 0; /**< Minor version number */
@@ -189,5 +188,3 @@ void parg_init(struct parg_state *ps);
  */
 [[nodiscard]] int parg_reorder(int argc, char *argv[], const char *optstring,
                                const struct parg_option *longopts);
-
-#endif /* PARG_H_INCLUDED */
