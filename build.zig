@@ -9,6 +9,8 @@ pub fn build(b: *std.Build) void {
         "-Wextra",
         "-Wpedantic",
         "-Werror",
+        "-fstack-protector-strong",
+        "-fno-omit-frame-pointer",
     };
     const c_flags: []const []const u8 = &base_c_flags;
     const sanitize_c: std.zig.SanitizeC = if (optimize == .Debug) .full else .off;

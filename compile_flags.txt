@@ -4,4 +4,6 @@
 -Wextra
 -Wpedantic
 -Werror
+-fstack-protector-strong
+-fno-omit-frame-pointer
 -Iinclude

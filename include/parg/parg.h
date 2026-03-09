@@ -68,6 +68,7 @@ struct parg_option {
  * Initialize `ps`.
  *
  * Must be called before using state with a parser.
+ * `ps` must not be `nullptr`.
  *
  * @see parg_state
  *
@@ -117,6 +118,10 @@ void parg_init(struct parg_state *ps);
  * @return option value on match, `1` on nonoption element, `-1` on end of
  * arguments, '`?`' on unmatched option, '`?`' or '`:`' on option argument
  * error
+ *
+ * `ps` must have been initialized with `parg_init()`. If the caller mutates
+ * `ps->optind` outside the inclusive range `[1, argc]`, parsing stops and
+ * `-1` is returned.
  */
 [[nodiscard]] int parg_getopt(struct parg_state *ps, int argc,
                               char *const argv[], const char *optstring);
@@ -166,6 +171,10 @@ void parg_init(struct parg_state *ps);
  * @return option value on match, `0` for flag option, `1` on nonoption
  * element, `-1` on end of arguments, '`?`' on unmatched or ambiguous option,
  * '`?`' or '`:`' on option argument error
+ *
+ * `ps` must have been initialized with `parg_init()`. If the caller mutates
+ * `ps->optind` outside the inclusive range `[1, argc]`, parsing stops and
+ * `-1` is returned.
  */
 [[nodiscard]] int parg_getopt_long(struct parg_state *ps, int argc,
                                    char *const argv[], const char *optstring,
@@ -184,7 +193,8 @@ void parg_init(struct parg_state *ps);
  * @param argv array of pointers to command-line arguments
  * @param optstring string containing option characters
  * @param longopts array of `parg_option` structures
- * @return index of first nonoption in `argv` on success, `-1` on error
+ * @return index of first nonoption in `argv` on success, `-1` on invalid
+ * input such as a negative `argc`
  */
 [[nodiscard]] int parg_reorder(int argc, char *argv[], const char *optstring,
                                const struct parg_option *longopts);

@@ -14,10 +14,27 @@ A small C library for parsing command-line arguments. It supports short options,
 
 **Example**
 ```c
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "parg/parg.h"
+
+static int parse_nonnegative_int(const char *text, int *out) {
+  char *end = nullptr;
+  long value;
+
+  errno = 0;
+  value = strtol(text, &end, 10);
+  if (errno != 0 || end == text || *end != '\0' || value < 0 ||
+      value > INT_MAX) {
+    return -1;
+  }
+
+  *out = (int)value;
+  return 0;
+}
 
 int main(int argc, char **argv) {
   struct parg_state ps;
@@ -30,6 +47,7 @@ int main(int argc, char **argv) {
       {nullptr, PARG_NOARG, nullptr, 0},
   };
 
+  int size = 0;
   int opt;
   while ((opt = parg_getopt_long(&ps, argc, argv, ":ho:s::", longopts, nullptr)) != -1) {
     if (opt == 1) {
@@ -45,13 +63,22 @@ int main(int argc, char **argv) {
       printf("output=%s\n", ps.optarg);
       break;
     case 's':
-      printf("size=%d\n", ps.optarg ? atoi(ps.optarg) : 1);
+      if (ps.optarg == nullptr) {
+        size = 1;
+        break;
+      }
+      if (parse_nonnegative_int(ps.optarg, &size) != 0) {
+        fprintf(stderr, "Invalid size: %s\n", ps.optarg);
+        return 1;
+      }
+      printf("size=%d\n", size);
       break;
     case '?':
       if (ps.optopt) {
         fprintf(stderr, "Unknown option: -%c\n", ps.optopt);
       } else {
-        fprintf(stderr, "Unknown or ambiguous option: %s\n", argv[ps.optind - 1]);
+        const char *token = ps.optind > 0 ? argv[ps.optind - 1] : "(unknown)";
+        fprintf(stderr, "Unknown or ambiguous option: %s\n", token);
       }
       return 1;
     case ':':

@@ -27,6 +27,11 @@
 
 #include "parg/parg.h"
 
+/* Reject caller-mutated state that would index outside argv. */
+static bool has_valid_state(const struct parg_state *ps, int argc) {
+  return argc >= 0 && ps->optind >= 1 && ps->optind <= argc;
+}
+
 /* Check if state is at end of argv. */
 static bool is_argv_end(const struct parg_state *ps, int argc,
                         char *const argv[]) {
@@ -139,6 +144,8 @@ static int match_long(struct parg_state *ps, int argc, char *const argv[],
 }
 
 void parg_init(struct parg_state *ps) {
+  assert(ps != nullptr);
+
   ps->optarg = nullptr;
   ps->optind = 1;
   ps->optopt = '?';
@@ -158,6 +165,12 @@ int parg_getopt_long(struct parg_state *ps, int argc, char *const argv[],
   assert(optstring != nullptr);
 
   ps->optarg = nullptr;
+  ps->optopt = '?';
+
+  if (!has_valid_state(ps, argc)) {
+    ps->nextchar = nullptr;
+    return -1;
+  }
 
   if (argc < 2) {
     return -1;
@@ -306,6 +319,10 @@ int parg_reorder(int argc, char *argv[], const char *optstring,
 
   assert(argv != nullptr);
   assert(optstring != nullptr);
+
+  if (argc < 0) {
+    return -1;
+  }
 
   if (argc < 2) {
     return argc;

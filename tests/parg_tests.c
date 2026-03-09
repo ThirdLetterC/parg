@@ -120,6 +120,70 @@ static int test_reorder_moves_options_first() {
   return 0;
 }
 
+static int test_invalid_state_stops_parsing() {
+  char arg0[] = "prog";
+  char arg1[] = "-v";
+  char *argv[] = {arg0, arg1, nullptr};
+  struct parg_state ps;
+
+  parg_init(&ps);
+  ps.optind = -1;
+  ps.nextchar = arg1;
+  ps.optarg = arg1;
+  ps.optopt = 'x';
+
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":v", nullptr, nullptr), -1);
+  ASSERT_EQ_INT(ps.optarg == nullptr, 1);
+  ASSERT_EQ_INT(ps.optopt, '?');
+  ASSERT_EQ_INT(ps.nextchar == nullptr, 1);
+  return 0;
+}
+
+static int test_extraneous_long_argument_returns_colon() {
+  char arg0[] = "prog";
+  char arg1[] = "--verbose=yes";
+  char *argv[] = {arg0, arg1, nullptr};
+  struct parg_state ps;
+  const struct parg_option longopts[] = {
+      {"verbose", PARG_NOARG, nullptr, 'v'},
+      {nullptr, PARG_NOARG, nullptr, 0},
+  };
+
+  parg_init(&ps);
+  ASSERT_EQ_INT(parg_getopt_long(&ps, 2, argv, ":v", longopts, nullptr), ':');
+  ASSERT_EQ_INT(ps.optopt, 'v');
+  ASSERT_EQ_INT(ps.nextchar == nullptr, 1);
+  return 0;
+}
+
+static int test_flag_option_writes_destination() {
+  char arg0[] = "prog";
+  char arg1[] = "--verbose";
+  char *argv[] = {arg0, arg1, nullptr};
+  struct parg_state ps;
+  int verbose = 0;
+  int longindex = -1;
+  const struct parg_option longopts[] = {
+      {"verbose", PARG_NOARG, &verbose, 7},
+      {nullptr, PARG_NOARG, nullptr, 0},
+  };
+
+  parg_init(&ps);
+  ASSERT_EQ_INT(
+      parg_getopt_long(&ps, 2, argv, "", longopts, &longindex), 0);
+  ASSERT_EQ_INT(verbose, 7);
+  ASSERT_EQ_INT(longindex, 0);
+  return 0;
+}
+
+static int test_negative_argc_reorder_returns_error() {
+  char arg0[] = "prog";
+  char *argv[] = {arg0, nullptr};
+
+  ASSERT_EQ_INT(parg_reorder(-1, argv, "", nullptr), -1);
+  return 0;
+}
+
 int main() {
   if (test_unknown_long_sets_optopt_zero() != 0) {
     return 1;
@@ -134,6 +198,18 @@ int main() {
     return 1;
   }
   if (test_reorder_moves_options_first() != 0) {
+    return 1;
+  }
+  if (test_invalid_state_stops_parsing() != 0) {
+    return 1;
+  }
+  if (test_extraneous_long_argument_returns_colon() != 0) {
+    return 1;
+  }
+  if (test_flag_option_writes_destination() != 0) {
+    return 1;
+  }
+  if (test_negative_argc_reorder_returns_error() != 0) {
     return 1;
   }
 
